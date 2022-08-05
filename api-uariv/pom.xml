@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>Wildfly Camel :: Example :: Camel REST Swagger</name>
+    <groupId>co.gov.ramajudicial.eap</groupId>
+    <artifactId>api-uariv</artifactId>
+    <packaging>war</packaging>
+    
+     <version>5.8.0.fuse-7_10_2-00001-redhat-00002</version>
+
+    <description>WildFly Camel Examples</description>
+    <url>https://github.com/wildfly-extras/wildfly-camel-examples</url>
+
+  
+
+    <properties>
+        <swagger.ui.dir>${project.build.directory}/dependency/META-INF/resources/webjars/swagger-ui/${swagger.ui.version}</swagger.ui.dir>
+        <swagger.ui.version>2.2.10</swagger.ui.version>
+   
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.wildfly>7.4.2.GA-redhat-00002</version.wildfly>
+        <version.wildfly.camel>5.8.0.fuse-7_10_2-00001-redhat-00005</version.wildfly.camel>
+
+        <!-- Fuse version -->
+        <version.fuse>7.10.0.fuse-sb2-7_10_2-00001-redhat-00002</version.fuse>
+
+        <!-- Plugin versions -->
+        <version-exec-maven-plugin>1.6.0</version-exec-maven-plugin>
+        <version-galleon-maven-plugin>4.2.6.Final</version-galleon-maven-plugin>
+        <version-maven-antrun-plugin>3.0.0</version-maven-antrun-plugin>
+        <version-maven-assembly-plugin>3.3.0</version-maven-assembly-plugin>
+        <version-maven-compiler-plugin>3.8.1</version-maven-compiler-plugin>
+        <version-maven-dependency-plugin>3.1.2</version-maven-dependency-plugin>
+        <version-maven-release-plugin>3.0.0-M1</version-maven-release-plugin>
+        <version-maven-resources-plugin>3.2.0</version-maven-resources-plugin>
+        <version-maven-source-plugin>3.2.0</version-maven-source-plugin>
+        <version-maven-surefire-plugin>3.0.0-M5</version-maven-surefire-plugin>
+        <version-maven-war-plugin>3.0.0</version-maven-war-plugin>
+        <version-wildfly-galleon-plugin>4.2.8.Final</version-wildfly-galleon-plugin>
+        <version-wildfly-maven-plugin>2.0.2.Final</version-wildfly-maven-plugin>
+
+        <!-- EAP server name -->
+        <jboss.server.name>jboss-eap-7.4</jboss.server.name>
+
+        <deploy.skip>true</deploy.skip>
+    </properties>
+    
+     <!-- Dependency Management -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.redhat-fuse</groupId>
+                <artifactId>fuse-eap-bom</artifactId>
+                <version>${version.fuse}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
+
+    <dependencies>
+
+        <!-- Provided -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-cdi</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-swagger-java</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.inject</groupId>
+            <artifactId>jakarta.inject-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.3_spec</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+        
+		<dependency>
+			<groupId>org.apache.camel</groupId>
+			<artifactId>camel-gson</artifactId>
+			<scope>provided</scope>
+			
+		</dependency>
+		
+		
+		  <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-xmljson</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>xom</groupId>
+            <artifactId>xom</artifactId>
+            <version>1.2.5</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- Build -->
+    <build>
+        <finalName>${project.artifactId}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-swagger-ui</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.webjars</groupId>
+                                    <artifactId>swagger-ui</artifactId>
+                                    <version>${swagger.ui.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <replaceregexp match="http://petstore.swagger.io/v2/swagger.json" replace="http://localhost:8080/rest/api/swagger" byline="true">
+                                    <fileset dir="${swagger.ui.dir}">
+                                        <include name="*.html" />
+                                        <include name="*.js" />
+                                    </fileset>
+                                    <fileset dir="${swagger.ui.dir}/lang">
+                                        <include name="*.js" />
+                                    </fileset>
+                                </replaceregexp>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-swagger-ui</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${swagger.ui.dir}</directory>
+                                    <excludes>
+                                        <excludes>**/*.gz</excludes>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <skip>${deploy.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>wildfly-deploy</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>deploy-only</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>wildfly-undeploy</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>undeploy</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        
+        
+         
+        <!-- Plugin Management -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>${version-maven-antrun-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${version-maven-assembly-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${version-maven-compiler-plugin}</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${version-maven-dependency-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${version-maven-release-plugin}</version>
+                    <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${version-maven-resources-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${version-maven-source-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version-maven-surefire-plugin}</version>
+                    <configuration>
+                        <failIfNoTests>false</failIfNoTests>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${version-maven-war-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>${version-exec-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.jboss.galleon</groupId>
+                    <artifactId>galleon-maven-plugin</artifactId>
+                    <version>${version-galleon-maven-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.galleon-plugins</groupId>
+                    <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                    <version>${version-wildfly-galleon-plugin}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version-wildfly-maven-plugin}</version>
+                    <configuration>
+                        <version>${version.wildfly}</version>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+
+    
+    </build>
+    
+     <!-- Licenses -->
+    <licenses>
+        <license>
+            <name>apache_v2</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <!-- Developers -->
+    <developers>
+        <developer>
+            <name>WildFly Camel Committers</name>
+        </developer>
+    </developers>
+
+    <!-- Distribution Management -->
+    <distributionManagement>
+        <repository>
+            <id>jboss-releases-repository</id>
+            <name>JBoss Releases Repository</name>
+            <url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2</url>
+        </repository>
+        <snapshotRepository>
+            <id>jboss-snapshots-repository</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <!-- Profiles -->
+    <profiles>
+        <profile>
+            <id>deploy</id>
+            <properties>
+                <deploy.skip>false</deploy.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>openshift</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <configuration>
+                            <skipSource>true</skipSource>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <warName>ROOT</warName>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    
+    </profiles>
+</project>
